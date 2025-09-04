@@ -5,7 +5,17 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+            keyframes: {
+     
+      },
+      animation: {
+         'spin-once': 'spinOnce 1s linear',
+      },
+      colors: {
+        coffee: '#6B4226',
+      },
+    },
   },
   plugins: [],
 }
