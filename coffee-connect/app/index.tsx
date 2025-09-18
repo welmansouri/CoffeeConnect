@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, StatusBar, Pressable, Image, Button } from 'react-native';
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+    withSequence 
+
+} from 'react-native-reanimated';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StatusBar, Pressable, Image, StyleSheet, Button } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useColorScheme } from "nativewind";
 
-import 'react-native-reanimated';
+import { useContext } from "react";
+import { AppContext } from "@/context/appContext";
 import "../styles/global.css"
 import SunIcon from '../assets/icons/sun.svg'
 import CartIcon from '../assets/icons/cart.svg'
@@ -14,38 +22,53 @@ import CoffeeCupIcon from '../assets/icons/coffeeCup.svg'
 import DarkIcon from '../assets/icons/dark.svg'
 
 const initialItems = [
-  { key: '1', size: 's', name: 'Small', isPressed: false, price: '1$', width: '26', height: '26' },
-  { key: '2', size: 'm', name: 'Medium', isPressed: false, price: '2$', width: '34', height: '34' },
-  { key: '3', size: 'l', name: 'Large', isPressed: false, price: '3$', width: '40', height: '40' },
-  { key: '4', size: 'xl', name: 'XLarge', isPressed: false, price: '4$', width: '44', height: '44' },
-  { key: '5', size: 'xxl', name: 'Custom', isPressed: false, price: '5$', width: '34', height: '34' },
+  { key: '1', size: 's', name: 'Small', isPressed: false, price: '1', width: '22', height: '22' ,valToAdd:'100',valBottom:'110'},
+  { key: '2', size: 'm', name: 'Medium', isPressed: false, price: '2', width: '30', height: '30',valToAdd:'100',valBottom:'110' },
+  { key: '3', size: 'l', name: 'Large', isPressed: false, price: '3', width: '36', height: '36' ,valToAdd:'100',valBottom:'110'},
+  { key: '4', size: 'xl', name: 'XLarge', isPressed: false, price: '4', width: '42', height: '42' ,valToAdd:'100',valBottom:'110'},
+  { key: '5', size: 'xxl', name: 'Custom', isPressed: false, price: '5', width: '36', height: '36' ,valToAdd:'100',valBottom:'110'},
 
 ];
 
 export default function RootApp() {
-  const [pressedArticle, setPressedArticle] = useState({});
-  type CartItem = {
-    selectedProduct: any;
-    productQuantity: number;
+  const { theme, toggleTheme, cart, addToCart,pressedArticle ,setSelectedItem ,coffeeIsMaking,cupStyle} = useContext(AppContext);
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const progress = useSharedValue(0);
+ useEffect(() => {
+    if (coffeeIsMaking) {
+    progress.value = 0;
+    progress.value = withTiming(1, { duration: 5000 });
+   
+  } else {
+    progress.value = 0;
+  }
+}, [coffeeIsMaking]);
+
+const animatedStyle = useAnimatedStyle(() => {
+  return {
+    width: `${progress.value * 110}%`,
   };
-  const [myCart, setMyCart] = useState<CartItem[]>([]);
+});
+
+
+
+
+
+
+
 
   const [productQuantity, setProductQuantity] = useState(0);
-  const [makeCoffee, setMakeCoffee] = useState(false);
-  const { colorScheme, setColorScheme } = useColorScheme();
 
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 
   const handlePress = (item: React.SetStateAction<{}>) => {
-    setPressedArticle(item);
+    console.log(theme)
+    setSelectedItem(item);
   };
 
-  const toggleTheme = () => {
-    console.log('hereeee')
-    setColorScheme(colorScheme === "light" ? "dark" : "light");
-  };
+
 
   const goToCartView = () => {
     console.log("pressed cart");
@@ -54,60 +77,82 @@ export default function RootApp() {
   };
 
   const addProductQuantity = () => {
+    if(!coffeeIsMaking){
     setProductQuantity(productQuantity + 1);
+    }
   };
 
-  const addToCart = () => {
-    let newProduct = { selectedProduct: pressedArticle, productQuantity: productQuantity }
+  const addToCartHandle = () => {
+    if(!coffeeIsMaking){
+    let newProduct = {id:Date.now(), selectedProduct: pressedArticle, productQuantity: productQuantity }
     if (productQuantity > 0) {
-      setMyCart([...myCart, newProduct]);
+      addToCart(newProduct);
     }
+    console.log(cart)
     setProductQuantity(0)
+  }
   };
 
   const removeProduct = () => {
+    if(!coffeeIsMaking){
     setProductQuantity(productQuantity > 1 ? productQuantity - 1 : 0);
+    }
   };
 
-  const startCoffeeMaking = async () => {
-    setMakeCoffee(true);
-    await sleep(5000); // 3 secondes de simulation
-    setMakeCoffee(false);
-  };
 
   return (
     <SafeAreaProvider >
       <SafeAreaView >
         <StatusBar
           animated={true}
-          barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
-          backgroundColor={colorScheme === "dark" ? "#0a0a0a" : "#f3f4f6"}
+          barStyle={theme === "dark" ? "light-content" : "dark-content"}
+          backgroundColor={theme === "dark" ? "#0a0a0a" : "#f3f4f6"}
           hidden={true}
         />
-        <View className='min-h-[100%]  bg-white text-black dark:bg-black dark:text-white flex flex-col'>
+        <View className='min-h-[95%]  bg-white text-black dark:bg-black dark:text-white flex flex-col'>
           <View className="flex-row items-center justify-between bg-gray-100  dark:bg-black min-h-[60px] px-3 py-2" style={{ minHeight: 60, zIndex: 50, elevation: 6 }}>
             <Pressable onPress={toggleTheme} hitSlop={10} className="p-2">
-              {colorScheme === 'dark' ? <DarkIcon width={30} height={30} stroke="#ffffff" /> : <SunIcon width={30} height={30} stroke="#000000" />}
+              {theme === 'light' ? <SunIcon width={30} height={30} stroke="#ffffff" /> : <DarkIcon width={30} height={30} stroke="#000000" />}
 
             </Pressable>
 
             <View className="flex-1 items-center">
               <Text className="text-xl font-bold dark:text-white text-black">Hello World!</Text>
             </View>
-
             <View className="flex-row items-center">
               <Pressable onPress={goToCartView} hitSlop={10} className="p-2 ">
-                <CartIcon width={30} height={30} stroke={colorScheme === "dark" ? "#ffffff" : "#000000"} />
+                <CartIcon width={30} height={30} stroke={theme === "light" ? "#ffffff" : "#000000"} />
               </Pressable>
-              <Text className="ml-1 dark:text-white text-black">{myCart.length}</Text>
+              <Text className="ml-1 dark:text-white text-black">{cart.length}</Text>
             </View>
           </View>
-          <View className=' justify-center items-center max-h-[60%]  ' >
+          <View className=' justify-center items-center max-h-[60%] min-h-[60%] w-full ' >
             <Image
-              source={require('../assets/images/machine-coffee.png')}
-              className="rounded-xl shadow   w-full"
+            source={
+    coffeeIsMaking
+      ? require('../assets/images/machine-making-coffee.png')
+      : require('../assets/images/machine-coffee.png')
+  }
+              className="rounded-xl shadow   w-full z-0"
               resizeMode="contain"
             />
+{pressedArticle && (
+  <Animated.Image
+    source={require("../assets/images/coffe-cup.png")}
+    className="absolute z-50"
+    style={[
+      {
+        width: Number(pressedArticle?.width) + Number(pressedArticle?.valToAdd),
+        height: Number(pressedArticle?.height) + Number(pressedArticle?.valToAdd),
+        bottom: Number(pressedArticle?.valBottom),
+      },
+      cupStyle, 
+    ]}
+    resizeMode="contain"
+  />
+)}
+
+    
           </View>
 
 
@@ -117,7 +162,7 @@ export default function RootApp() {
               <Text className='justify-start items-start font-bold text-black dark:text-white '  >
                 Size options
               </Text>
-              <Text className='justify-end items-end text-2xl font-extrabold text-black dark:text-white' >{pressedArticle.price}</Text>
+              <Text className='justify-end items-end text-2xl font-extrabold text-black dark:text-white' >{pressedArticle?.price} $</Text>
 
             </View>
 
@@ -133,10 +178,15 @@ export default function RootApp() {
                         }`}
                     >
                       <Pressable className=' '
-                        onPress={() => handlePress(element)}
+                        onPress={() => !coffeeIsMaking ? handlePress(element): console.log('imp')}
                       >
-                        <CoffeeCupIcon width={element.width} height={element.height} stroke={colorScheme === "dark" ? "#ffffff" : "#000000"} />
-                      </Pressable>
+ 
+    <CoffeeCupIcon
+      width={element.width}
+      height={element.height}
+      stroke={theme === "dark" ? "#000000" : "#ffffff"}
+    />
+                    </Pressable>
                     </View>
 
                     <View className=' items-center'>
@@ -159,7 +209,7 @@ export default function RootApp() {
               <View className='flex-1 max-w-[25%]  min-w-[25%] flex-row  px-5 justify-center items-center' >
                 <View className=' justify-center items-center' >
                   <Pressable onPress={removeProduct}>
-                    <TrashIcon width={30} height={45} stroke={colorScheme === "dark" ? "#ffffff" : "#000000"}  ></TrashIcon>
+                    <TrashIcon width={30} height={45} stroke={theme === "dark" ? "#000000" : "#ffffff"} ></TrashIcon>
                   </Pressable>
                 </View>
 
@@ -172,20 +222,34 @@ export default function RootApp() {
                 </View>
                 <View className=' justify-center items-center' >
                   <Pressable onPress={addProductQuantity}>
-                    <AddIcon width={30} height={45} stroke={colorScheme === "dark" ? "#ffffff" : "#000000"} ></AddIcon>
+                    <AddIcon width={30} height={45} stroke={theme === "dark" ? "#000000" : "#ffffff"}></AddIcon>
                   </Pressable>
                 </View>
+              
 
 
               </View>
               <View className=' min-w-[70%] max-w-[70%]  justify-center items-center' >
                 <Pressable
-                  onPress={addToCart}
-                  className={` w-full rounded-full justify-center items-center px-4 py-3 ${makeCoffee ? 'bg-coffee ' : 'bg-green-700'
+                  onPress={addToCartHandle}
+                  className={` w-full rounded-full justify-center items-center px-4 py-3 ${coffeeIsMaking ? '' : ' bg-green-700'
                     }`}>
-                  <Text className="text-white font-semibold text-base   ">            {makeCoffee ? 'Brewing...' : 'Tap to fill'}
+                      {coffeeIsMaking && (  <Animated.View
+        style={[
+          {
+            ...StyleSheet.absoluteFillObject, 
+          },
+          animatedStyle,
+        ]}
+        className="rounded-3xl bg-coffee "
+      />)}
+                  <Text className="text-white font-semibold text-base   ">            {coffeeIsMaking ? 'Brewing...' : 'Add to Cart'}
                   </Text>
                 </Pressable>
+                <View style={{ height: 10, backgroundColor: "brown", borderRadius: 5, overflow: "hidden", marginVertical: 10 }}>
+ 
+</View>
+
 
 
               </View>
