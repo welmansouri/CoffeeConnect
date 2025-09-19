@@ -44,7 +44,7 @@ export default function CartScreen() {
       <View className='flex-row justify-center items-center'>
       <Text className="text-base font-bold dark:text-white">{(item.selectedProduct.price * item.productQuantity).toFixed(2)} $</Text>
       <Pressable onPress={() => removeFromCart(item.id)}  hitSlop={10} className="p-2 ">
-        <TrashIcon width={30} height={30} stroke={theme === "light" ? "#ffffff" : "#000000"} />
+        <TrashIcon width={30} height={30} stroke={theme === "dark" ? "#ffffff" : "#000000"} />
       </Pressable>
       </View>
     </View>
@@ -62,7 +62,7 @@ export default function CartScreen() {
         <View className='min-h-[100%]  bg-white text-black dark:bg-black dark:text-white flex flex-col'>
           <View className="flex-row items-center justify-between bg-gray-100  dark:bg-black min-h-[60px] px-3 py-2" style={{ minHeight: 60, zIndex: 50, elevation: 6 }}>
             <Pressable onPress={toggleTheme} hitSlop={10} className="p-2">
-              {theme === 'light' ? <SunIcon width={30} height={30} stroke="#ffffff" /> : <DarkIcon width={30} height={30} stroke="#000000" />}
+              {theme === 'dark' ? <SunIcon width={30} height={30} stroke="#ffffff" /> : <DarkIcon width={30} height={30} stroke="#000000" />}
 
             </Pressable>
 
@@ -71,14 +71,13 @@ export default function CartScreen() {
             </View>
             <View className="flex-row items-center">
               <Pressable onPress={goToHomeView} hitSlop={10} className="p-2 ">
-                <HomeIcon width={30} height={30} stroke={theme === "light" ? "#ffffff" : "#000000"} />
+                <HomeIcon width={30} height={30} stroke={theme === "dark" ? "#ffffff" : "#000000"} />
               </Pressable>
             </View>
           </View>
 
 
           <View className=' min-h-[80%]  max-h-[80%] shadow flex-col  px-3 py-2 justify-around' >
-
 
             <FlatList
               data={cart}

@@ -5,7 +5,6 @@ import { AppProvider } from '@/context/appContext';
 export default function AppLayout() {
   return (
     <AppProvider>
-
       <SafeAreaProvider>
         <Slot />
       </SafeAreaProvider>
